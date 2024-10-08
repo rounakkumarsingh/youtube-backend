@@ -1,5 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
-const fs = Bun.fs;
+import fs from "fs";
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -16,8 +16,11 @@ const uplodOnCloudinary = async (localFilePath) => {
             resource_type: "auto",
         });
         console.log("File is uplaoded on cloudinary: ", response.url);
+        // fs.unlinkSync(localFilePath);
         return response;
     } catch (error) {
         fs.unlinkSync(localFilePath);
     }
 };
+
+export { uplodOnCloudinary };
