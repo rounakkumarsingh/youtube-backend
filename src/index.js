@@ -5,6 +5,7 @@ import { asyncHandler } from "./utils/asyncHandler.js";
 
 dotenv.config({
     path: "../.env",
+    cridentials: true,
 });
 
 const startServer = asyncHandler(async () => {

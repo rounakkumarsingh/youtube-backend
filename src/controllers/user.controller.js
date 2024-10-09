@@ -3,14 +3,16 @@ import ApiError from "../utils/ApiError.js";
 import User from "../models/user.model.js";
 import { uplodOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import jsonwebtoken from "jsonwebtoken";
 
-const generateAccessAndRefreshTokens = async (userId) => {
+const generateAccessAndRefreshToken = async (userId) => {
     try {
         const user = await User.findById(userId);
-        const accessToken = user.generateAccessToken;
-        const refreshToken = user.generateRefreshToken;
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
 
         user.refreshToken = refreshToken;
+
         await user.save({ validateBeforeSave: false });
 
         return { accessToken, refreshToken };
@@ -96,7 +98,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     const user = await User.findOne({
-        $or: [{ email, username }],
+        $or: [{ username }, { email }],
     });
 
     if (!user) {
@@ -108,8 +110,7 @@ const loginUser = asyncHandler(async (req, res) => {
     if (!isPasswordValid) {
         throw new ApiError(404, "User doesn't exist.");
     }
-
-    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
         user._id
     );
 
@@ -122,7 +123,8 @@ const loginUser = asyncHandler(async (req, res) => {
         secure: true,
     };
 
-    return res.status
+    return res
+        .status(200)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
         .json(
@@ -136,15 +138,16 @@ const loginUser = asyncHandler(async (req, res) => {
 
 const logoutUser = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-    await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
         userId,
         {
             $set: {
-                refreshToken: undefined,
+                refreshToken: null,
             },
         },
         { new: true }
     );
+    console.log(updatedUser);
 
     const options = {
         httpOnly: true,
@@ -153,9 +156,60 @@ const logoutUser = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .clearCookie("accessToken")
-        .clearCookie("refreshToken")
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options)
         .json(new ApiResponse(200, "User logged out successfully"));
+});
+
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken =
+        req.cookies?.refreshToken || req.body.refreshToken;
+    if (!incomingRefreshToken) {
+        throw new ApiError(401, "unauthorized request");
+    }
+
+    try {
+        const decodedToken = jsonwebtoken.verify(
+            incomingRefreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+        );
+
+        const user = await User.findById(decodedToken?._id);
+
+        if (!user) {
+            throw new ApiError(401, "Invalid refresh Token");
+        }
+
+        if (incomingRefreshToken == user?.refreshToken) {
+            throw new ApiError(401, "refresh Token is expired or wrong");
+        }
+
+        const options = {
+            httpOnly: true,
+            secure: true,
+        };
+
+        await generateAccessAndRefreshToken(user._id);
+
+        const { accessToken, newRefreshToken } = jsonwebtoken.sign(
+            user,
+            process.env.ACCESS_TOKEN_SECRET
+        );
+
+        return res
+            .status(200)
+            .cookie("accessToken", accessToken, options)
+            .cookie("refreshToken", newRefreshToken, options)
+            .json(
+                new ApiResponse(
+                    200,
+                    { accessToken, refreshToken: newRefreshToken },
+                    "Access token refreshed"
+                )
+            );
+    } catch (error) {
+        throw new ApiError(401, error?.message || "Invlaid Refresh Token");
+    }
 });
 
 export { registerUser, loginUser, logoutUser };
