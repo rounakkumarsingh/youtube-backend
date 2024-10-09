@@ -14,6 +14,7 @@ const generateAccessAndRefreshToken = async (userId) => {
 
         user.refreshToken = refreshToken;
 
+        // Skipping validation before save to avoid re-validation of already validated fields
         await user.save({ validateBeforeSave: false });
 
         return { accessToken, refreshToken };
@@ -178,7 +179,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new ApiError(401, "Invalid refresh Token");
         }
 
-        if (incomingRefreshToken == user?.refreshToken) {
+        if (incomingRefreshToken !== user?.refreshToken) {
             throw new ApiError(401, "refresh Token is expired or wrong");
         }
 
@@ -187,12 +188,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             secure: true,
         };
 
-        await generateAccessAndRefreshToken(user._id);
-
-        const { accessToken, newRefreshToken } = jsonwebtoken.sign(
-            user,
-            process.env.ACCESS_TOKEN_SECRET
-        );
+        const { accessToken, refreshToken: newRefreshToken } =
+            await generateAccessAndRefreshToken(user._id);
 
         return res
             .status(200)
@@ -223,7 +220,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     }
 
     user.password = newPassword;
-    await user.save({ validateBeforeSave: false });
+    await user.save({ validateBeforeSave: false }); // Skipping validation before save to avoid re-validation of already validated fields
 
     return res
         .status(200)
@@ -233,7 +230,9 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 const getCurrentUser = asyncHandler(async (req, res) => {
     return res
         .status(200)
-        .json(200, req.user, "Current user fetched successfully");
+        .json(
+            new ApiResponse(200, req.user, "Current user fetched successfully")
+        );
 });
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
