@@ -2,7 +2,7 @@ import { Schema, model } from "mongoose";
 
 const videoSchema = Schema(
     {
-        videofile: {
+        videoFile: {
             type: String,
             required: true,
         },
