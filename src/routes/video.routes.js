@@ -31,7 +31,7 @@ router
     );
 
 router
-    .route("/old/:videoId")
+    .route("/:videoId")
     .get(getVideoById)
     .delete(deleteVideo)
     .patch(upload.single("thumbnail"), updateVideo);
