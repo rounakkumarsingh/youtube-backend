@@ -40,4 +40,6 @@ const videoSchema = Schema(
     { timestamps: true }
 );
 
-export const Video = model("Video", videoSchema);
+const Video = model("Video", videoSchema);
+
+export default Video;
