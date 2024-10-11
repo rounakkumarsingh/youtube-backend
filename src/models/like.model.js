@@ -5,17 +5,14 @@ const likeSchema = new Schema(
         comment: {
             type: Schema.Types.ObjectId,
             ref: "Comment",
-            required: true,
         },
         video: {
             type: Schema.Types.ObjectId,
             ref: "Video",
-            required: true,
         },
         tweet: {
             type: Schema.Types.ObjectId,
             ref: "Tweet",
-            required: true,
         },
         likedBy: {
             type: Schema.Types.ObjectId,
@@ -23,8 +20,28 @@ const likeSchema = new Schema(
             required: true,
         },
     },
-    { timestamps: true }
+    {
+        timestamps: true,
+    }
 );
+
+likeSchema.pre("validate", function (next) {
+    if (!this.comment && !this.video && !this.tweet) {
+        this.invalidate(
+            "comment",
+            "At least one of video, comment, or tweet must be present."
+        );
+        this.invalidate(
+            "video",
+            "At least one of video, comment, or tweet must be present."
+        );
+        this.invalidate(
+            "tweet",
+            "At least one of video, comment, or tweet must be present."
+        );
+    }
+    next();
+});
 
 const Like = model("Like", likeSchema);
 
