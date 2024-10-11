@@ -1,5 +1,5 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { Video } from "../models/video.model.js";
+import Video from "../models/video.model.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {
@@ -53,9 +53,7 @@ const getVideoById = asyncHandler(async (req, res) => {
         .json(new ApiResponse(200, video, "Video fetched successfully"));
 });
 
-
 const deleteVideo = asyncHandler(async (req, res) => {
-
     const { videoId } = req.params;
     const video = await Video.findById(videoId);
     if (!video) {
@@ -65,7 +63,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
     if (video.owner.toString() !== req.user._id.toString()) {
         throw new ApiError(403, "You are not authorized to delete this video");
     }
-    
+
     const videoFile = video.videoFile;
     const thumbnailFile = video.thumbnail;
     const resultDeletingFromCloudinary = await deleteFromCloudinary([
@@ -74,7 +72,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
     ]);
 
     const resultDeletingFromDB = await video.remove();
-    
+
     const resultDeleting = {
         resultDeletingFromCloudinary,
         resultDeletingFromDB,
