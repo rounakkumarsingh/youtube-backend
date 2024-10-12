@@ -28,12 +28,16 @@ youtube-backend/
 │   ├── routes/             # API routes
 │   ├── middlewares/        # Custom middleware
 │   ├── utils/              # Helper functions
-│   └── app.js              # Express app setup
+│   ├── app.js              # Express app setup
+│   ├── constants.js        # Constants used throughout the Project
+|   └── index.js            # Start point of the app
 │
 ├── .env.example            # Environment variables
 ├── package.json            # Project dependencies
-├── README.md               # Project documentation
-└── server.js               # Entry point
+├── .gitignore              # Template of files to unstage for git
+├── .prettierrc             # Prettier Configuration Files
+├── .prettierignore         # Template of files for prettier to ignore
+└── README.md               # Project documentation    
 ```
 
 ## Getting Started
@@ -131,7 +135,7 @@ Contributions are welcome! Please fork the repository, make your changes, and su
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+This project is licensed under the MIT License. See the [LICENSE](https://opensource.org/license/mit) file for more details.
 
 ## Acknowledgments
 
