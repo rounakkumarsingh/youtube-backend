@@ -42,7 +42,7 @@ youtube-backend/
 
 -   **Node.js**: v16+
 -   **MongoDB**: Running locally or a cloud instance (e.g., MongoDB Atlas).
--   **AWS S3 Bucket**: For video uploads (or similar storage service).
+-   **Cloudinary**: For video and images uploads (or similar storage service).
 
 ### Installation
 
@@ -137,4 +137,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 -   [Express.js Documentation](https://expressjs.com/)
 -   [Mongoose Documentation](https://mongoosejs.com/)
--   [AWS S3 Documentation](https://docs.aws.amazon.com/s3/)
+-   [Cludinary Documentation](https://cloudinary.com/documentation/)
