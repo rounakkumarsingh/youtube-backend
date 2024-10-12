@@ -29,6 +29,9 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 const updatePlaylist = asyncHandler(async (req, res) => {
     const { playlistId } = req.params;
     const { name, description } = req.body;
+    if (!name && !description) {
+        throw new ApiError(400, "Name or description is required");
+    }
     const playlist = await Playlist.findById(playlistId);
     if (!playlist) {
         throw new ApiError(404, "Playlist not found");
@@ -39,8 +42,8 @@ const updatePlaylist = asyncHandler(async (req, res) => {
             "You are not authorized to update this playlist"
         );
     }
-    playlist.name = name;
-    playlist.description = description;
+    playlist.name = name || playlist.name;
+    playlist.description = description || playlist.description;
     await playlist.save();
     return res
         .status(200)
@@ -59,7 +62,7 @@ const deletePlaylist = asyncHandler(async (req, res) => {
             "You are not authorized to delete this playlist"
         );
     }
-    await playlist.remove();
+    await playlist.deleteOne();
     return res.status(200).json(new ApiResponse(200, null, "Playlist deleted"));
 });
 

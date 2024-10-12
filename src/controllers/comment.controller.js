@@ -12,7 +12,21 @@ const getVideoComments = asyncHandler(async (req, res) => {
     if (!video) {
         throw new ApiError(404, "Video not found");
     }
-    const comments = await Comment.paginate({ videoId }, { page, limit });
+    const aggregateQuery = Comment.aggregate([
+        {
+            $match: { video: video?._id }, // Filter comments by videoId
+        },
+        {
+            $sort: { createdAt: -1 }, // Sort comments by creation date (newest first)
+        },
+    ]);
+
+    const options = {
+        page,
+        limit,
+    };
+
+    const comments = await Comment.aggregatePaginate(aggregateQuery, options);
     res.status(200).json(
         new ApiResponse(200, comments, "Comments fetched successfully")
     );
@@ -25,7 +39,21 @@ const getCommentComments = asyncHandler(async (req, res) => {
     if (!comment) {
         throw new ApiError(404, "Comment not found");
     }
-    const comments = await Comment.paginate({ commentId }, { page, limit });
+    const aggregateQuery = Comment.aggregate([
+        {
+            $match: { comment: comment?._id }, // Filter comments by tweetId
+        },
+        {
+            $sort: { createdAt: -1 }, // Sort comments by creation date (newest first)
+        },
+    ]);
+
+    const options = {
+        page,
+        limit,
+    };
+
+    const comments = await Comment.aggregatePaginate(aggregateQuery, options);
     res.status(200).json(
         new ApiResponse(200, comments, "Comments fetched successfully")
     );
@@ -38,7 +66,21 @@ const getTweetComments = asyncHandler(async (req, res) => {
     if (!tweet) {
         throw new ApiError(404, "Tweet not found");
     }
-    const comments = await Comment.paginate({ tweetId }, { page, limit });
+    const aggregateQuery = Comment.aggregate([
+        {
+            $match: { tweet: tweet?._id }, // Filter comments by tweetId
+        },
+        {
+            $sort: { createdAt: -1 }, // Sort comments by creation date (newest first)
+        },
+    ]);
+
+    const options = {
+        page,
+        limit,
+    };
+
+    const comments = await Comment.aggregatePaginate(aggregateQuery, options);
     res.status(200).json(
         new ApiResponse(200, comments, "Comments fetched successfully")
     );
@@ -46,6 +88,9 @@ const getTweetComments = asyncHandler(async (req, res) => {
 
 const addCommentToVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
+    if (!videoId) {
+        throw new ApiError(400, "Video ID is required");
+    }
     const { content } = req.body;
     if (!content) {
         throw new ApiError(400, "Content is required");
@@ -58,7 +103,7 @@ const addCommentToVideo = asyncHandler(async (req, res) => {
 
     const comment = await Comment.create({
         content,
-        videoId: video._id,
+        video: video._id,
         owner: req.user._id,
     });
 
@@ -78,7 +123,7 @@ const addCommentToComment = asyncHandler(async (req, res) => {
 
     const newComment = await Comment.create({
         content,
-        commentId: comment._id,
+        comment: comment._id,
         owner: req.user._id,
     });
 
@@ -98,7 +143,7 @@ const addCommentToTweet = asyncHandler(async (req, res) => {
 
     const comment = await Comment.create({
         content,
-        tweetId: tweet._id,
+        tweet: tweet._id,
         owner: req.user._id,
     });
 
@@ -117,7 +162,7 @@ const deleteComment = asyncHandler(async (req, res) => {
             "You are not authorized to delete this comment"
         );
     }
-    await comment.remove();
+    await comment.deleteOne();
     res.status(200).json(new ApiResponse(200, null, "Comment deleted"));
 });
 

@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import User from "../models/user.model.js";
 import Subscription from "../models/subscription.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import ApiError from "../utils/ApiError.js";
 
 const getSubscribedChannels = asyncHandler(async (req, res) => {
     const { subscriberId } = req.params;
@@ -13,7 +14,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
 
     const subscribedChannels = await Subscription.find({
         subscriber: subscriber._id,
-    });
+    }).populate("channel", "name avatar");
 
     res.status(200).json(
         new ApiResponse(
@@ -39,7 +40,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     });
 
     if (subscription) {
-        await subscription.remove();
+        await subscription.deleteOne();
         res.status(200).json(
             new ApiResponse(200, null, "Subscription removed successfully")
         );

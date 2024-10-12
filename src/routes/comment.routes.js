@@ -13,9 +13,15 @@ import {
 const router = Router();
 router.use(verifyJWT);
 
-router.route("/:videoId").get(getVideoComments).post(addCommentToVideo);
-router.route("/:commentId").get(getCommentComments).post(addCommentToComment);
-router.route("/:tweetId").get(getTweetComments).post(addCommentToTweet);
+router.route("/video/:videoId").get(getVideoComments).post(addCommentToVideo);
+router
+    .route("/comment/:commentId")
+    .get(getCommentComments)
+    .post(addCommentToComment);
+router.route("/tweet/:tweetId").get(getTweetComments).post(addCommentToTweet);
 
-router.route("/comment/:commentId").delete(deleteComment).patch(updateComment);
+router
+    .route("/comment/:commentId/manage")
+    .delete(deleteComment)
+    .patch(updateComment);
 export default router;

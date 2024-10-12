@@ -1,30 +1,35 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
-import User  from "../models/user.model.js";
-import Tweet  from "../models/tweet.model.js";
+import User from "../models/user.model.js";
+import Tweet from "../models/tweet.model.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { uplodOnCloudinary } from "../utils/cloudinary.js";
+import {
+    deleteFromCloudinary,
+    uplodOnCloudinary,
+} from "../utils/cloudinary.js";
 
 const createTweet = asyncHandler(async (req, res) => {
     const { content } = req.body;
-    const attachmentsLocalPaths = req.files?.attachments;
+    if (!content) {
+        throw new ApiError(400, "Content is required");
+    }
+
+    const attachmentsLocalPaths =
+        req.files?.map((attachment) => attachment.path) || [];
+
+    const attachments = await Promise.all(
+        attachmentsLocalPaths.map(async (attachmentLocalPath) => {
+            const attachment = await uplodOnCloudinary(attachmentLocalPath);
+            return attachment.url;
+        })
+    );
 
     const user = await User.findById(req.user?._id);
-
-    const attachments = [];
-    attachmentsLocalPaths.forEach(async (attachmentLocalPath) => {
-        const attachment = await uplodOnCloudinary(attachmentLocalPath);
-        attachments.push(attachment.url);
+    const newTweet = await Tweet.create({
+        owner: user._id,
+        content: content,
+        attachments,
     });
-
-    const newTweet = await Tweet.create(
-        {
-            owner: user?._id,
-            content,
-            attachments,
-        },
-        { timestamps: true }
-    );
 
     return res
         .status(200)
@@ -39,51 +44,74 @@ const getUserTweets = asyncHandler(async (req, res) => {
         throw new ApiError(400, "User not found");
     }
 
-    const tweets = await Tweet.find({owner: userId});
+    const tweets = await Tweet.find({ owner: userId });
 
-    return res.status(200).json(new ApiResponse(200, tweets, "Tweets fetched successfully"));
+    return res
+        .status(200)
+        .json(new ApiResponse(200, tweets, "Tweets fetched successfully"));
 });
 
 const updateTweet = asyncHandler(async (req, res) => {
-    const tweetId = req.params;
-    const tweet = Tweet.findById(tweetId);
+    const { tweetId } = req.params;
+
+    const tweet = await Tweet.findById(tweetId);
     if (!tweet) {
         throw new ApiError(404, "Tweet Not found");
+    }
+    if (tweet.owner.toString() !== req.user?._id.toString()) {
+        throw new ApiError(401, "You are not authorized to update this tweet");
     }
 
     const { newContent } = req.body;
+    let deleteUrls = req.body.deleteUrls || [];
+    if (!Array.isArray(deleteUrls)) {
+        deleteUrls = [deleteUrls];
+    }
+    const invalidDeleteUrls = Array.isArray(deleteUrls)
+        ? deleteUrls.filter((url) => !tweet.attachments.includes(url))
+        : [];
+    console.log(deleteUrls);
+    if (invalidDeleteUrls.length > 0) {
+        throw new ApiError(
+            400,
+            "Some URLs to delete are not in the tweet attachments"
+        );
+    }
 
-    const newAttachmentsLocalPaths = req.files?.newAttachments;
+    const newAttachmentsLocalPath = req.files || [];
+    const newAttachments = await Promise.all(
+        newAttachmentsLocalPath.map(async (attachment) => {
+            const newAttachment = await uplodOnCloudinary(attachment.path);
+            return newAttachment.url;
+        })
+    );
 
-    const newAttachments = [];
-    newAttachmentsLocalPaths.forEach(async (newAttachmentsLocalPath) => {
-        const newAttachment = await uplodOnCloudinary(newAttachmentsLocalPath);
-        newAttachments.push(newAttachment.url);
-    });
+    tweet.content = newContent || tweet.content;
+    tweet.attachments = tweet.attachments.concat(newAttachments);
+    tweet.attachments = tweet.attachments.filter(
+        (attachment) => !deleteUrls.includes(attachment)
+    );
 
-    tweet.content = newContent;
-    const oldAttachments = tweet.attachments;
-    tweet.attachments = newAttachments;
-    const updatedTweet = await tweet.save();
-    await deleteFromCloudinary(oldAttachments)
+    await tweet.save();
+    await deleteFromCloudinary(deleteUrls);
+
     return res
         .status(200)
-        .json(new ApiResponse(200, updatedTweet, "Tweet updated successfully"));
-    
+        .json(new ApiResponse(200, tweet, "Tweet updated successfully"));
 });
 
 const deleteTweet = asyncHandler(async (req, res) => {
-    const tweetId = req.params;
-    const tweet = Tweet.findById(tweetId);
+    const { tweetId } = req.params;
+    const tweet = await Tweet.findById(tweetId);
     if (!tweet) {
         throw new ApiError(404, "Tweet Not found");
     }
-    if (tweet.owner !== req.user?._id) {
+    if (tweet.owner.toString() !== req.user?._id.toString()) {
         throw new ApiError(401, "You are not authorized to delete this tweet");
     }
 
     const attachments = tweet.attachments;
-    await tweet.delete();
+    await tweet.deleteOne();
     await deleteFromCloudinary(attachments);
     return res
         .status(200)

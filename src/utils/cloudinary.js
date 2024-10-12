@@ -30,12 +30,13 @@ const deleteFromCloudinary = async (pathsOnCloudinary) => {
             return null;
         }
 
-        const paths = Array.isArray(pathsOnCloudinary) ? pathsOnCloudinary : [pathsOnCloudinary];
+        const paths = Array.isArray(pathsOnCloudinary)
+            ? pathsOnCloudinary
+            : [pathsOnCloudinary];
 
         for (const path of paths) {
             const publicId = path.split("/").pop().split(".")[0];
-            const result = await cloudinary.uploader.destroy(publicId);
-            console.log(result);
+            return await cloudinary.uploader.destroy(publicId);
         }
     } catch (error) {
         throw new ApiError(500, "Error deleting file from cloudinary");

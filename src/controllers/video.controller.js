@@ -1,5 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import Video from "../models/video.model.js";
+import User from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {
@@ -48,6 +49,20 @@ const getVideoById = asyncHandler(async (req, res) => {
     if (!video) {
         throw new ApiError(404, "Video not found");
     }
+    if (video.isPublished === true) {
+        video.views += 1;
+        const user = await User.findById(req?.user?._id);
+        if (
+            user.watchHistory.length === 0 ||
+            user.watchHistory[user.watchHistory.length - 1].toString() !==
+                video._id.toString()
+        ) {
+            user.watchHistory.push(video._id);
+            await Promise.all([user.save(), video.save()]);
+        } else {
+            await video.save();
+        }
+    }
     return res
         .status(200)
         .json(new ApiResponse(200, video, "Video fetched successfully"));
@@ -71,7 +86,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
         thumbnailFile,
     ]);
 
-    const resultDeletingFromDB = await video.remove();
+    const resultDeletingFromDB = await video.deleteOne();
 
     const resultDeleting = {
         resultDeletingFromCloudinary,
@@ -84,8 +99,63 @@ const deleteVideo = asyncHandler(async (req, res) => {
         );
 });
 
-const updateVideo = asyncHandler(async (req, res) => {});
-const togglePublishStatus = asyncHandler(async (req, res) => {});
+const updateVideo = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+    const video = await Video.findById(videoId);
+    if (!video) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    if (video.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You are not authorized to update this video");
+    }
+
+    const { title, description } = req.body;
+    if (!title && !description) {
+        throw new ApiError(400, "Title or description are required");
+    }
+
+    const updatedVideo = await Video.findByIdAndUpdate(
+        videoId,
+        {
+            title: title || video.title,
+            description: description || video.description,
+        },
+        { new: true }
+    );
+    return res
+        .status(200)
+        .json(new ApiResponse(200, updatedVideo, "Video updated successfully"));
+});
+
+const togglePublishStatus = asyncHandler(async (req, res) => {
+    const { videoId } = req.params;
+    const video = await Video.findById(videoId);
+    if (!video) {
+        throw new ApiError(404, "Video not found");
+    }
+
+    if (video.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You are not authorized to update this video");
+    }
+
+    const updatedVideo = await Video.findByIdAndUpdate(
+        videoId,
+        {
+            isPublished: !video.isPublished,
+        },
+        { new: true }
+    );
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                updatedVideo,
+                "Video publish status updated successfully"
+            )
+        );
+});
 export {
     getAllVideos,
     publishVideo,

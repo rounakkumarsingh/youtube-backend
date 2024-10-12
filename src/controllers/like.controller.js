@@ -1,8 +1,10 @@
 import Like from "../models/like.model.js";
 import Video from "../models/video.model.js";
 import Comment from "../models/comment.model.js";
+import Tweet from "../models/tweet.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
@@ -11,10 +13,10 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Video not found");
     }
     const user = req.user;
-    const like = await Like.findOne({ video: videoId, user: user._id });
+    const like = await Like.findOne({ video: videoId, likedBy: user._id });
 
     if (like) {
-        await like.remove();
+        await like.deleteOne();
         return res
             .status(200)
             .json(new ApiResponse(200, null, "Video unliked"));
@@ -35,10 +37,10 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Comment not found");
     }
     const user = req.user;
-    const like = await Like.findOne({ comment: commentId, user: user._id });
+    const like = await Like.findOne({ comment: commentId, likedBy: user._id });
 
     if (like) {
-        await like.remove();
+        await like.deleteOne();
         return res
             .status(200)
             .json(new ApiResponse(200, null, "Comment unliked"));
@@ -60,9 +62,9 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Tweet not found");
     }
     const user = req.user;
-    const like = await Like.findOne({ tweet: tweetId, user: user._id });
+    const like = await Like.findOne({ tweet: tweetId, likedBy: user._id });
     if (like) {
-        await like.remove();
+        await like.deleteOne();
         return res
             .status(200)
             .json(new ApiResponse(200, null, "Tweet unliked"));
