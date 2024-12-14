@@ -250,16 +250,22 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     const { fullName, email } = req.body;
 
     if (!fullName && !email) {
-        throw new ApiError(400, "All fileds are required");
+        throw new ApiError(400, "All fields are required");
+    }
+
+    const updateData = {
+        fullName: fullName || req.user.fullName,
+    };
+
+    if (email) {
+        updateData.email = email;
+        updateData.verifiedEmail = false;
     }
 
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set: {
-                fullName: fullName || req.user.fullName,
-                email: email || req.user.email,
-            },
+            $set: updateData,
         },
         { new: true }
     ).select("-password");
@@ -267,7 +273,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(
-            new ApiResponse(200, user, "Account Details updated successfully")
+            new ApiResponse(200, user, "Account details updated successfully")
         );
 });
 
@@ -461,27 +467,27 @@ const startEmailVerification = asyncHandler(async (req, res) => {
 
 const verifyEmail = asyncHandler(async (req, res) => {
     try {
-        const token = req.params.id;
+        const token = req.params.token;
         if (!token) {
             throw new ApiError(400, "Invalid Token");
         }
 
         const decodedToken = jsonwebtoken.verify(
             token,
-            process.env.REFRESH_TOKEN_EXPIRY
+            process.env.REFRESH_TOKEN_SECRET
         );
 
-        const user = await User.findById(decodedToken._id);
+        const user = await User.findById(decodedToken.id);
         if (!user) {
             throw new ApiError(400, "Invalid Token");
         }
-        if (user.email === decodedToken.email && user.emailVerified) {
+        if (user.email === decodedToken.email && user.verifiedEmail) {
             throw new ApiError(400, "Email Already Verified");
         }
         if (user.email !== decodedToken.email) {
             throw new ApiError(400, "Invalid Token");
         }
-        user.emailVerified = true;
+        user.verifiedEmail = true;
         await user.save();
 
         return res
