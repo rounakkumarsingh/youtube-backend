@@ -77,7 +77,7 @@ export default async function emailVerificationLink(user) {
     `;
 
     const { data, error } = await resend.emails.send({
-        from: "Admin admin@videotube.rounakkumarsingh.me",
+        from: "admin@videotube.rounakkumarsingh.me",
         to: user.email,
         subject: "Email Verification",
         html: HTML,
