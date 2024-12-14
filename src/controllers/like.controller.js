@@ -15,6 +15,10 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     const user = req.user;
     const like = await Like.findOne({ video: videoId, likedBy: user._id });
 
+    if (user.verifiedEmail === false) {
+        throw new ApiError(403, "Email not verified");
+    }
+
     if (like) {
         await like.deleteOne();
         return res
@@ -38,6 +42,10 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     }
     const user = req.user;
     const like = await Like.findOne({ comment: commentId, likedBy: user._id });
+
+    if (user.verifiedEmail === false) {
+        throw new ApiError(403, "Email not verified");
+    }
 
     if (like) {
         await like.deleteOne();
@@ -63,6 +71,11 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     }
     const user = req.user;
     const like = await Like.findOne({ tweet: tweetId, likedBy: user._id });
+
+    if (user.verifiedEmail === false) {
+        throw new ApiError(403, "Email not verified");
+    }
+
     if (like) {
         await like.deleteOne();
         return res

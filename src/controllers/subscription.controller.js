@@ -33,6 +33,10 @@ const toggleSubscription = asyncHandler(async (req, res) => {
         throw new ApiError(404, "Channel not found");
     }
 
+    if (req.user.verifiedEmail === false) {
+        throw new ApiError(403, "Email not verified");
+    }
+
     const subscriber = req.user;
     const subscription = await Subscription.findOne({
         subscriber: subscriber._id,

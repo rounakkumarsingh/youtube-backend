@@ -88,6 +88,11 @@ const getTweetComments = asyncHandler(async (req, res) => {
 
 const addCommentToVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
+
+    if (req.user.verifiedEmail === false) {
+        throw new ApiError(403, "Email not verified");
+    }
+
     if (!videoId) {
         throw new ApiError(400, "Video ID is required");
     }
@@ -116,6 +121,10 @@ const addCommentToComment = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Content is required");
     }
 
+    if (req.user.verifiedEmail === false) {
+        throw new ApiError(403, "Email not verified");
+    }
+
     const comment = await Comment.findById(commentId);
     if (!comment) {
         throw new ApiError(404, "Comment not found");
@@ -134,6 +143,10 @@ const addCommentToTweet = asyncHandler(async (req, res) => {
     const { content } = req.body;
     if (!content) {
         throw new ApiError(400, "Content is required");
+    }
+
+    if (req.user.verifiedEmail === false) {
+        throw new ApiError(403, "Email not verified");
     }
 
     const tweet = await Tweet.findById(tweetId);

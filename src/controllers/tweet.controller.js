@@ -14,6 +14,10 @@ const createTweet = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Content is required");
     }
 
+    if (req.user.verifiedEmail === false) {
+        throw new ApiError(403, "Email not verified");
+    }
+
     const attachmentsLocalPaths =
         req.files?.map((attachment) => attachment.path) || [];
 
@@ -24,9 +28,8 @@ const createTweet = asyncHandler(async (req, res) => {
         })
     );
 
-    const user = await User.findById(req.user?._id);
     const newTweet = await Tweet.create({
-        owner: user._id,
+        owner: req.user._id,
         content: content,
         attachments,
     });

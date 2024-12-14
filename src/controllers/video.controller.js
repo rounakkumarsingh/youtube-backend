@@ -17,13 +17,20 @@ const publishVideo = asyncHandler(async (req, res) => {
     if (!title || !description) {
         throw new ApiError(400, "Title and description are required");
     }
+
+    if (req.user?.verifiedEmail === false) {
+        throw new ApiError(403, "Email not verified");
+    }
+
     const videoLocalPath = req.files?.video?.[0]?.path;
     const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
     if (!videoLocalPath || !thumbnailLocalPath) {
         throw new ApiError(400, "Video and thumbnail are required");
     }
+
     const video = await uplodOnCloudinary(videoLocalPath);
     const thumbnail = await uplodOnCloudinary(thumbnailLocalPath);
+
     const newVideo = await Video.create({
         videoFile: video.secure_url,
         thumbnail: thumbnail.secure_url,
@@ -33,8 +40,9 @@ const publishVideo = asyncHandler(async (req, res) => {
         owner: req.user?._id,
     });
     const createdVideo = await Video.findById(newVideo._id);
+
     if (!createdVideo) {
-        throw new ApiError(500, "Video not created");
+        throw new ApiError(500, "Video not created, Please try again.");
     }
     return res
         .status(201)
