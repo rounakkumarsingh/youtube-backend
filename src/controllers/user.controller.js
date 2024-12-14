@@ -5,6 +5,7 @@ import User from "../models/user.model.js";
 import { uplodOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jsonwebtoken from "jsonwebtoken";
+import aj from "../utils/arcjet.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -35,8 +36,17 @@ const registerUser = asyncHandler(async (req, res) => {
     ) {
         throw new ApiError(400, "All fields are required");
     }
-    const existedUser = await User.findOne({ $or: [{ username }, { email }] });
 
+    const decision = await aj.protect(req, { email });
+    if (decision.isDenied()) {
+        if (decision.reason.isEmail()) {
+            throw new ApiError(403, "Improper Email");
+        } else {
+            throw new ApiError(403, "Forbidden");
+        }
+    }
+
+    const existedUser = await User.findOne({ $or: [{ username }, { email }] });
     if (existedUser) {
         throw new ApiError(409, "User with email or username already exists");
     }
