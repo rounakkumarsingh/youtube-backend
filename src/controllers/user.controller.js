@@ -6,6 +6,7 @@ import { uplodOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jsonwebtoken from "jsonwebtoken";
 import aj from "../utils/arcjet.js";
+import emailVerificationLink from "../utils/emailVerify.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -442,6 +443,58 @@ const getWatchHistory = asyncHandler(async (req, res) => {
         );
 });
 
+const startEmailVerification = asyncHandler(async (req, res) => {
+    const email = await emailVerificationLink(req.user);
+    if (email === null) {
+        throw new ApiError(403, "Email Already Verified");
+    } else {
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    "Email Verification Link Sent Successfully"
+                )
+            );
+    }
+});
+
+const verifyEmail = asyncHandler(async (req, res) => {
+    try {
+        const token = req.params.id;
+        if (!token) {
+            throw new ApiError(400, "Invalid Token");
+        }
+
+        const decodedToken = jsonwebtoken.verify(
+            token,
+            process.env.REFRESH_TOKEN_EXPIRY
+        );
+
+        const user = await User.findById(decodedToken._id);
+        if (!user) {
+            throw new ApiError(400, "Invalid Token");
+        }
+        if (user.email === decodedToken.email && user.emailVerified) {
+            throw new ApiError(400, "Email Already Verified");
+        }
+        if (user.email !== decodedToken.email) {
+            throw new ApiError(400, "Invalid Token");
+        }
+        user.emailVerified = true;
+        await user.save();
+
+        return res
+            .status(200)
+            .json(new ApiResponse(200, "Email Verified Successfully"));
+    } catch (error) {
+        throw new ApiError(
+            error.statusCode || 400,
+            error.message || "Invalid Token or token expired"
+        );
+    }
+});
+
 export {
     registerUser,
     loginUser,
@@ -454,4 +507,6 @@ export {
     updateCoverImage,
     getUserChannelProfile,
     getWatchHistory,
+    startEmailVerification,
+    verifyEmail,
 };

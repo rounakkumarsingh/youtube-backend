@@ -11,6 +11,8 @@ import {
     refreshAccessToken,
     getUserChannelProfile,
     getWatchHistory,
+    startEmailVerification,
+    verifyEmail,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -48,5 +50,7 @@ router
     .patch(verifyJWT, upload.single("coverImage"), updateCoverImage);
 router.route("/channel/:username").get(verifyJWT, getUserChannelProfile);
 router.route("/watch-history").get(verifyJWT, getWatchHistory);
+router.route("/verify-email").post(verifyJWT, startEmailVerification);
+router.route("/verify-email/:token").get(verifyEmail);
 
 export default router;

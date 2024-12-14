@@ -46,6 +46,11 @@ const userSchema = new Schema(
             type: String,
             default: null,
         },
+        verifiedEmail: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
     },
     { timestamps: true }
 );
