@@ -1,28 +1,31 @@
-import jwt from "jsonwebtoken";
-
+import { sign } from "hono/jwt";
 import { Resend } from "resend";
+import type { UserDocument } from "../models/user.model";
 
-const resend = new Resend(process.env.RESEND_KEY);
+const resend = new Resend(import.meta.env.RESEND_KEY as string);
 
-export default async function emailVerificationLink(user) {
-    if (user.verifiedEmail === true) {
-        return null;
-    }
+export default async function emailVerificationLink(user: UserDocument) {
+	if (user.verifiedEmail === true) {
+		return null;
+	}
 
-    const payload = {
-        id: user._id,
-        email: user.email,
-        time: Date.now(),
-    };
+	const payload = {
+		id: user._id,
+		email: user.email,
+		time: Date.now(),
+	};
 
-    const token = jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET, {
-        expiresIn: "1h",
-    });
+	const token = sign(
+		{
+			...payload,
+			exp: Math.floor(Date.now() / 1000) + 60 * 5,
+		},
+		import.meta.env.EMAIL_SECRET as string
+	);
 
-    const url = `${process.env.BASE_URL}/users/verify-email/${token}`;
+	const url = `${import.meta.env.CORS_ORIGIN}/users/verify-email/${token}`;
 
-    const HTML = `
-    <!DOCTYPE html>
+	const HTML = `<!DOCTYPE html>
     <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -74,18 +77,14 @@ export default async function emailVerificationLink(user) {
         </table>
     </body>
     </html>
-    `;
+`;
 
-    const { data, error } = await resend.emails.send({
-        from: "admin@videotube.rounakkumarsingh.me",
-        to: user.email,
-        subject: "Email Verification",
-        html: HTML,
-    });
+	const { data, error } = await resend.emails.send({
+		from: "admin@rounakkumarsingh.me",
+		to: user.email,
+		subject: "Email Verification",
+		html: HTML,
+	});
 
-    if (process.env.NODE_ENV === "development") {
-        console.log(data, error);
-    }
-
-    return { data, error };
+	return { data, error };
 }

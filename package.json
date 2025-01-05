@@ -1,41 +1,33 @@
 {
-    "name": "youtube-backend",
-    "version": "1.0.0",
-    "description": "",
-    "type": "module",
-    "main": "index.js",
-    "scripts": {
-        "dev": "nodemon -r dotenv/config --experimental-json-modules src/index.js",
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "prod": "bun run src/index.js"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/rounakkumarsingh/chai-backend.git"
-    },
-    "author": "rounakkumarsingh",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/rounakkumarsingh/chai-backend/issues"
-    },
-    "homepage": "https://github.com/rounakkumarsingh/chai-backend#readme",
-    "devDependencies": {
-        "eslint": "^9.12.0",
-        "nodemon": "^3.1.7",
-        "prettier": "^3.3.3"
-    },
-    "dependencies": {
-        "@arcjet/node": "^1.0.0-alpha.34",
-        "bcrypt": "^5.1.1",
-        "cloudinary": "^2.5.1",
-        "cookie-parser": "^1.0.0",
-        "cors": "^2.8.5",
-        "dotenv": "^16.4.5",
-        "express": "^4.21.0",
-        "jsonwebtoken": "^9.0.2",
-        "mongoose": "^8.7.0",
-        "mongoose-aggregate-paginate-v2": "^1.1.2",
-        "multer": "^1.4.5-lts.1",
-        "resend": "^4.0.1"
-    }
+	"name": "videotube-backend",
+	"module": "src/index.ts",
+	"type": "module",
+	"scripts": {
+		"start": "bun --env-file=/etc/videotube-backend.env src/index.ts",
+		"dev": "bun --hot --inspect src/index.ts",
+		"lint": "bun --bun eslint src/**/*.ts",
+		"prettier": "bun --bun prettier --write src/**/*.ts",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.17.0",
+		"@types/bun": "^1.1.14",
+		"eslint": "^9.17.0",
+		"globals": "^15.14.0",
+		"prettier": "3.4.2",
+		"typescript-eslint": "^8.19.0"
+	},
+	"peerDependencies": {
+		"typescript": "^5.0.0"
+	},
+	"dependencies": {
+		"@arcjet/bun": "^1.0.0-alpha.34",
+		"@hono/zod-validator": "^0.4.2",
+		"cloudinary": "^2.5.1",
+		"hono": "^4.6.15",
+		"mongoose": "^8.9.3",
+		"resend": "^4.0.1",
+		"winston": "^3.17.0",
+		"zod": "^3.24.1"
+	}
 }
