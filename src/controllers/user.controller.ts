@@ -73,12 +73,13 @@ const regitserUser = createMiddleware<AppEnv>(async (c) => {
 		await Bun.write("public/temp/" + coverImage.name, coverImage);
 	}
 
-	const avatarLink = await uploadOnCloudinary("public/temp/" + avatar.name);
+	const avatarLink = (await uploadOnCloudinary("public/temp/" + avatar.name))
+		.url;
 	let coverImageLink = "";
 	if (coverImage) {
-		coverImageLink = await uploadOnCloudinary(
-			"public/temp/" + coverImage.name
-		);
+		coverImageLink = (
+			await uploadOnCloudinary("public/temp/" + coverImage.name)
+		).url;
 	}
 
 	const user = await User.create({
@@ -248,7 +249,8 @@ const updateUserAvatar = createMiddleware<AppEnv>(async (c) => {
 
 	await Bun.write("public/temp/" + avatar.name, avatar);
 
-	const avatarLink = await uploadOnCloudinary("public/temp/" + avatar.name);
+	const avatarLink = (await uploadOnCloudinary("public/temp/" + avatar.name))
+		.url;
 
 	if (!avatarLink) {
 		throw new ApiError(400, "Error while uploading avatar");
@@ -270,9 +272,9 @@ const updateCoverImage = createMiddleware<AppEnv>(async (c) => {
 
 	await Bun.write("public/temp/" + coverImage.name, coverImage);
 
-	const avatarLink = await uploadOnCloudinary(
-		"public/temp/" + coverImage.name
-	);
+	const avatarLink = (
+		await uploadOnCloudinary("public/temp/" + coverImage.name)
+	).url;
 
 	if (!avatarLink) {
 		throw new ApiError(400, "Error while uploading avatar");

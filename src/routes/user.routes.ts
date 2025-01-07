@@ -27,34 +27,34 @@ const userRouter = new Hono()
 	.post("/register", registerValidator, regitserUser)
 	.post("/login", loginValidator, loginUser)
 	// secured routes
-	.post("/logout", ...verifyJWT, logoutUser)
-	.post("/change-password", ...verifyJWT, changeCurrentPassword)
+	.post("/logout", verifyJWT, logoutUser)
+	.post("/change-password", verifyJWT, changeCurrentPassword)
 	.patch(
 		"/update-account",
-		...verifyJWT,
+		verifyJWT,
 		updateAccountValidator,
 		updateAccountDetails
 	)
 	.patch(
 		"/update-avatar",
-		...verifyJWT,
+		verifyJWT,
 		updateAccountValidator,
 		updateUserAvatar
 	)
 	.patch(
 		"/update-cover-image",
-		...verifyJWT,
+		verifyJWT,
 		coverImageUpdateValidator,
 		updateCoverImage
 	)
 	.get(
 		"/channel/:username",
-		...verifyJWT,
+		verifyJWT,
 		channelProfileValidator,
 		getUserChannelProfile
 	)
-	.get("/watch-history", ...verifyJWT, getWatchHistory)
-	.post("/verify-email", ...verifyJWT, startEmailVerification)
+	.get("/watch-history", verifyJWT, getWatchHistory)
+	.post("/verify-email", verifyJWT, startEmailVerification)
 	.get("/verify-email/:token", verifyEmailValidator, verifyEmail);
 
 export default userRouter;

@@ -1,4 +1,4 @@
-import { Model, model, Schema } from "mongoose";
+import { Model, model, Schema, type ObjectId } from "mongoose";
 import Bun from "bun";
 import { sign } from "hono/jwt";
 
@@ -8,7 +8,7 @@ interface IUser extends Document {
 	fullName: string;
 	avatar: string;
 	coverImage?: string;
-	watchHistory: string[];
+	watchHistory: ObjectId[];
 	password: string;
 	refreshToken: string | null;
 	verifiedEmail: boolean;

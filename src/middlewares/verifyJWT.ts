@@ -1,20 +1,18 @@
 import { createMiddleware } from "hono/factory";
-import { createFactory } from "hono/factory";
 import { zValidator } from "@hono/zod-validator";
 import ApiError from "../utils/ApiError";
 import { z } from "zod";
 import type { AppEnv } from "../constants";
 import { verify } from "hono/jwt";
 import User from "../models/user.model";
+import { every } from "hono/combine";
 
 interface ValidatedCookies {
 	accessToken: string;
 	refreshToken: string;
 }
 
-const factory = createFactory<AppEnv>();
-
-const verifyJWT = factory.createHandlers(
+const verifyJWT = every(
 	zValidator(
 		"cookie",
 		z.object({
@@ -27,7 +25,7 @@ const verifyJWT = factory.createHandlers(
 			}
 		}
 	),
-	createMiddleware<AppEnv>(async (c) => {
+	createMiddleware<AppEnv>(async (c, next) => {
 		try {
 			const token: string =
 				(c.req.valid("cookie") as ValidatedCookies).accessToken ||
@@ -52,6 +50,7 @@ const verifyJWT = factory.createHandlers(
 			}
 
 			c.set("user", user);
+			await next();
 		} catch (error) {
 			throw new ApiError(
 				401,

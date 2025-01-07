@@ -17,7 +17,7 @@ export const uploadOnCloudinary = async (filePath: string) => {
 		resource_type: "auto",
 	});
 	unlinkSync(filePath);
-	return response.url;
+	return response;
 };
 
 export const deleteFromCloudinary = async (cloudinaryLink: string) => {
