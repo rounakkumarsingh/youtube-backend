@@ -1,5 +1,5 @@
 import { createMiddleware } from "hono/factory";
-import { type AppEnv } from "../constants";
+import type { AppEnv } from "../constants";
 import ApiError from "../utils/ApiError";
 import type {
 	DeleteVideoInput,

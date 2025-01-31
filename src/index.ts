@@ -1,4 +1,4 @@
-import connectDB from "./db";
+import connectDB from "./db/dbConnect";
 import app from "./app";
 import logger from "./utils/logger";
 import Bun from "bun";

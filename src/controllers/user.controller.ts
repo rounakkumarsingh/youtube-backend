@@ -1,13 +1,13 @@
 import { createMiddleware } from "hono/factory";
-import {
-	type RegisterInput,
-	type LoginInput,
-	type PasswordChangeInput,
-	type UpdateUserInput,
-	type AvatarUpdateInput,
-	type CoverImageUpdateInput,
-	type ChannelProfileInput,
-	type VerifyEmailInput,
+import type {
+	RegisterInput,
+	LoginInput,
+	PasswordChangeInput,
+	UpdateUserInput,
+	AvatarUpdateInput,
+	CoverImageUpdateInput,
+	ChannelProfileInput,
+	VerifyEmailInput,
 } from "../schemas/user.schema";
 import { signUpProtection } from "../utils/arcjet";
 import ApiError from "../utils/ApiError";

@@ -1,18 +1,20 @@
 import { Hono } from "hono";
-import userRouter from "./routes/user.routes";
-import ApiError from "./utils/ApiError";
 import { showRoutes } from "hono/dev";
 import { logger } from "hono/logger";
+import type { AppEnv } from "./constants";
+import commentRouter from "./routes/comment.routes";
+import userRouter from "./routes/user.routes";
 import videoRouter from "./routes/video.routes";
-import { type AppEnv } from "./constants";
+import ApiError from "./utils/ApiError";
 
 const app = new Hono<AppEnv>().basePath("/v1");
 
 app.use(logger());
 
 // using routes
-app.route("/", userRouter);
-app.route("/", videoRouter);
+app.route("/users", userRouter);
+app.route("/videos", videoRouter);
+app.route("/comments", commentRouter);
 
 app.onError((error, c) => {
 	console.error(error);

@@ -8,7 +8,7 @@ import {
 	updateVideo,
 } from "../controllers/video.controller";
 import verifyJWT from "../middlewares/verifyJWT";
-import { type AppEnv } from "../constants";
+import type { AppEnv } from "../constants";
 import {
 	deleteVideoValidator,
 	getVideoValidator,
@@ -18,8 +18,7 @@ import {
 	uploadVideoValidator,
 } from "../middlewares/validators/video.validator";
 
-const videoRouter = new Hono<AppEnv>().basePath("/videos");
-
+const videoRouter = new Hono<AppEnv>();
 videoRouter.use(verifyJWT);
 
 videoRouter

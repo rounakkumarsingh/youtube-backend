@@ -23,7 +23,6 @@ import {
 } from "../middlewares/validators/user.validators";
 
 const userRouter = new Hono()
-	.basePath("/users")
 	.post("/register", registerValidator, regitserUser)
 	.post("/login", loginValidator, loginUser)
 	// secured routes

@@ -1,4 +1,4 @@
-import { Model, Schema, model, type ObjectId } from "mongoose";
+import { type Model, Schema, model, type ObjectId } from "mongoose";
 
 interface IVideo extends Document {
 	videoFile: string;

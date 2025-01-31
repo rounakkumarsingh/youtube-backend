@@ -1,4 +1,4 @@
-import { Model, model, Schema, type ObjectId } from "mongoose";
+import { type Model, model, Schema, type ObjectId } from "mongoose";
 import Bun from "bun";
 import { sign } from "hono/jwt";
 
