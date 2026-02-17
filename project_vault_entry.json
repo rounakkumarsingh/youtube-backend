@@ -1,0 +1,48 @@
+{
+  "id": "youtube_backend_node",
+  "title": "YouTube Backend",
+  "tagline": "Express and MongoDB API for video sharing with media uploads, playlists, and social interactions.",
+  "github_url": "https://github.com/rounakkumarsingh/youtube-backend",
+  "tech_stack": [
+    "Node.js",
+    "Express",
+    "MongoDB",
+    "Mongoose",
+    "JWT",
+    "Cloudinary",
+    "Multer",
+    "Arcjet",
+    "Resend",
+    "Cookie-Parser",
+    "Cors"
+  ],
+  "concepts": [
+    "REST API",
+    "JWT authentication",
+    "File upload handling",
+    "Cloud storage integration",
+    "Email verification",
+    "Rate limiting",
+    "Pagination",
+    "Access control",
+    "Data modeling"
+  ],
+  "bullets": [
+    "Orchestrated an Express application with CORS, JSON parsing, static file serving, and cookie parsing before delegating to versioned routers for users, videos, playlists, likes, comments, tweets, subscriptions, and dashboard endpoints.",
+    "Modeled users, videos, playlists, likes, comments, tweets, and subscriptions with Mongoose schemas, adding bcrypt-backed password hashing, JWT token generation helpers, and relational references for ownership and histories.",
+    "Implemented user registration that runs Arcjet bot and email checks, uploads avatar and optional cover images to Cloudinary via Multer temp storage, and rejects duplicate usernames or emails.",
+    "Delivered JWT-based login and refresh flows that rotate refresh tokens, set httpOnly secure cookies, and expose middleware to authenticate and hydrate user context on protected routes.",
+    "Built video publishing pipeline that uploads video and thumbnail assets to Cloudinary, captures duration, persists owner metadata, and enforces owner authorization for updates, deletes, and publish toggles.",
+    "Tracked watch history by incrementing published video view counters and appending unique video IDs to a user's history when they fetch a video.",
+    "Added threaded commenting and like toggles across videos, tweets, and comments with email-verification enforcement and MongoDB aggregate pagination for comment feeds.",
+    "Implemented playlist CRUD with owner checks, population of video metadata, and guarded add/remove operations that prevent duplicates or missing entries.",
+    "Created tweet creation and update flows that attach Cloudinary-hosted media, allow selective attachment deletions, and restrict edits/deletes to the owner.",
+    "Built subscription toggles and channel profile aggregation that compute subscriber counts, subscriptions, and isSubscribed flags via MongoDB lookups.",
+    "Exposed dashboard statistics aggregating total videos, view counts, subscriber totals, and like counts across a channel's videos, comments, and tweets.",
+    "Sent email verification links using JWT-signed tokens delivered through Resend and validated tokens to flip the verifiedEmail flag during confirmation."
+  ],
+  "architecture": "The backend is a single Express server configured with CORS, JSON/body parsing, static file serving, and cookie parsing, then mounted with versioned routers for domain resources. MongoDB is accessed through Mongoose models for users, videos, playlists, likes, comments, tweets, and subscriptions, with JWT-based authentication enforced by middleware on protected routes. Multer stores uploaded media to a temp directory before forwarding files to Cloudinary, while Resend delivers JWT-backed email verification links. Arcjet applies anti-bot and token-bucket rules during registration, and centralized error handling wraps controller failures into structured API responses.",
+  "complexity": "medium",
+  "created_at": "2025-01-21",
+  "last_updated": "2026-02-17"
+}
